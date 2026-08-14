@@ -1,0 +1,4 @@
+bin,metric,taxa_acerto_RT-DETR-L,taxa_acerto_YOLOv11m,delta_taxa,p_valor,significativo,n_discordantes,nota
+small,McNemar_detection_IoU_hit,0.8968,0.8651,0.0317,0.386476,False,12,n11=105 n12=8 n21=4 n22=9 | Bonferroni k=3 (α'=0.01667)
+medium,McNemar_detection_IoU_hit,0.9854,0.9446,0.0408,0.005578,True,22,n11=320 n12=18 n21=4 n22=1 | Bonferroni k=3 (α'=0.01667)
+large,McNemar_detection_IoU_hit,0.9965,0.9787,0.0177,0.13057,False,7,n11=275 n12=6 n21=1 n22=0 | Bonferroni k=3 (α'=0.01667)

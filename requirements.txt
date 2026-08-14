@@ -1,0 +1,17 @@
+torch>=2.1.0
+torchvision>=0.16.0
+ultralytics>=8.2.0
+pydicom>=2.4.0
+opencv-python>=4.9.0
+Pillow>=10.0.0
+pandas>=2.0.0
+numpy>=1.26.0
+scikit-learn>=1.3.0
+scipy>=1.11.0
+# albumentations — requer Microsoft C++ Build Tools no Windows.
+# O Ultralytics já inclui augmentation nativo equivalente (fliplr, flipud, degrees, scale).
+# Para instalar manualmente após ter o MSVC: pip install "albumentations>=1.4.0,<2.0.0"
+pyyaml>=6.0
+tqdm>=4.66.0
+matplotlib>=3.8.0
+seaborn>=0.13.0

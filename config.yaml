@@ -1,0 +1,100 @@
+# Plano de ação v3 — experimento mamográfico (massas apenas, tercis empíricos)
+# Limites P33/P67 fixados após Etapa 0 com clamp de bbox e filtros ]0,150] mm (audit 2026).
+
+python_launcher: "py -3.11 -m"
+device: "cuda"                       # obrigatório para treino (RT-DETR / YOLO)
+
+datasets_to_run: ["inbreast", "cdd_cesm", "vindr"]
+vindr_negatives: false              # VinDr sem amostras "No Finding" neste estudo
+
+paths:
+  cdd_cesm_raw:  "ds/CDD-CESM"
+  inbreast_raw:  "ds/INBREAST/INbreast Release 1.0"
+  vindr_raw:     "ds/vindr-mammo-a-large-scale-benchmark-dataset-for-computer-aided-detection-and-diagnosis-in-full-field-digital-mammography-1.0.0"
+  processed:     "data/processed"
+  hub_root:      "data/hub"
+  hub_yolo:      "data/hub/yolo"
+  hub_coco:      "data/hub/coco"
+  logs:          "logs/preprocessing"
+  results:       "runs/detect/results"
+
+image:
+  target_size: 640
+
+preprocessing:
+  dicom_bit_depth_target: 8          # objetivo uint8 antes do CLAHE
+  min_samples_per_bin: 20           # métricas legadas — ver plano para n≥30 por teste
+  negative_sample_ratio: 0.0        # cenário FULL ausente neste estudo (sem negativos)
+
+crop:
+  threshold: 10
+  margin_px: 10
+
+clahe:
+  tile_grid_size: [8, 8]
+  clip_limit: 2.0
+
+# Tercis empíricos (P33/P67) na distribuição agregada pós-qualidade — opção principal confirmada
+nodule_size_bins:
+  small:  [0, 19.4]
+  medium: [19.4, 36.3]
+  large:  [36.3, 150]
+
+augmentation:
+  enabled: true
+  flip_horizontal: 0.5
+  flip_vertical:   0.0               # NUNCA ativar flip vertical em mamografia
+  rotation_degrees: 10
+  brightness_limit: 0.1
+  contrast_limit:   0.1
+  scale_limit:      0.1
+  elastic_deform:   true
+  mosaic: 0.0                        # Desativado — preserva escala das lesões
+
+splits:
+  train: 0.70
+  val:   0.15
+  test:  0.15
+  seed:  42
+
+training:
+  epochs: 100
+  early_stopping_patience: 20
+  batch_size: 8
+  img_size: 640
+  seed: 42
+  yolo:
+    model: "yolo11m.pt"
+    optimizer: "SGD"
+    lr0: 0.01
+    weight_decay: 0.0005
+    warmup_epochs: 3
+  detr:
+    model: "rtdetr-l.pt"
+    optimizer: "AdamW"
+    lr0: 0.0001
+    weight_decay: 0.0001
+    warmup_epochs: 3
+
+evaluation:
+  per_image_device: cpu
+  per_image_cpu_max_batch: 1
+  per_image_inference_batch: 1
+  per_image_half: true
+  per_image_imgsz: 640
+  per_image_stat_splits:
+    - test   # inferência formal — apenas teste (plano v3)
+  iou_threshold_fusion: 0.3
+  iou_per_image_ap: 0.5
+  conf_f1_per_image: 0.25
+  birads_threshold_fusion: 4
+  additional_metrics:
+    - "AR@100"
+    - "AP_small"
+    - "AP_medium"
+    - "AP_large"
+  min_samples_statistical_test: 30
+
+hardware:
+  device: "cuda:0"
+  seed: 42

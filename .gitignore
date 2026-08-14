@@ -1,0 +1,132 @@
+# ─────────────────────────────────────────────────────────────
+# Datasets brutos — NUNCA versionar (centenas de GB + licença restrita)
+# ─────────────────────────────────────────────────────────────
+ds/
+
+# RSNA Breast Cancer Detection (zip de ~290 GB + pasta descompactada)
+rsna-breast-cancer-detection/
+rsna-breast-cancer-detection.zip
+
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# DICOM e imagens médicas soltas
+*.dcm
+*.dicom
+*.pgm
+*.nii
+*.nii.gz
+
+# ─────────────────────────────────────────────────────────────
+# Dados gerados pelo pipeline
+# ─────────────────────────────────────────────────────────────
+data/
+!data/.gitkeep
+
+# Exceções: metadados pequenos e úteis para reprodutibilidade.
+# Descomente se quiser versioná-los (nenhum contém pixels de imagem).
+# !data/hub/
+# !data/hub/annotations.csv
+# !data/hub/splits.json
+# !data/hub/checksums.json
+
+# ─────────────────────────────────────────────────────────────
+# Pesos de modelo
+# ─────────────────────────────────────────────────────────────
+*.pt
+*.pth
+*.onnx
+*.engine
+*.torchscript
+*.tflite
+*.mlmodel
+
+# ─────────────────────────────────────────────────────────────
+# Saídas de treino e execução
+# ─────────────────────────────────────────────────────────────
+runs/
+logs/
+wandb/
+*.log
+
+# Resultados: versione as tabelas, ignore as figuras pesadas
+results/**/*.png
+results/**/*.jpg
+results/**/*.jpeg
+results/**/*.pdf
+results/evaluation/froc_values.csv
+results/audit/audit_report.csv
+
+# ─────────────────────────────────────────────────────────────
+# Artigo — versione o texto, ignore binários grandes
+# ─────────────────────────────────────────────────────────────
+artigo/*.docx
+artigo/*.pdf
+artigo/figures/
+
+# ─────────────────────────────────────────────────────────────
+# Python
+# ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc.*
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib60/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Ambientes virtuais
+.venv/
+venv/
+ENV/
+env/
+.conda/
+
+# Testes e cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ─────────────────────────────────────────────────────────────
+# Editores e sistema operacional
+# ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────────────────────────
+# Segredos
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+*.key
+*.pem

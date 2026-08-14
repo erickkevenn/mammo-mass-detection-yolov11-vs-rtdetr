@@ -1,0 +1,758 @@
+%% artigo_final.tex — CBIS'26 — Artigo Completo (máx. 10 páginas)
+%% Compilação: pdflatex -> pdflatex (bibliografia embutida, sem bibtex necessário)
+\documentclass[11pt,a4paper]{article}
+
+% --- Pacotes Básicos e Fonte ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{mathptmx}
+\usepackage{graphicx,url}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{multirow}
+\usepackage{xspace}
+\usepackage[hidelinks]{hyperref}
+
+% --- Configuração de Margens (Padrão CBIS) ---
+\usepackage[top=3.5cm, bottom=2.5cm, left=2.0cm, right=2.0cm]{geometry}
+
+% --- Espaçamento de Parágrafos (Padrão CBIS) ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\baselinestretch}{1.0}
+
+% --- Formatação de Títulos de Seção (Padrão CBIS) ---
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\fontsize{12}{14}\bfseries\uppercase}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+\titleformat{\subsection}{\normalfont\fontsize{11}{13}\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+% --- Formatação de Legendas ---
+\usepackage{caption}
+\captionsetup{font={bf,small}, labelsep=colon, justification=centering, skip=6pt}
+
+\newcommand{\etal}{\textit{et al.}\xspace}
+\sloppy
+
+\begin{document}
+
+% ============================================================
+% CABEÇALHO
+% ============================================================
+\begin{center}
+    \textbf{\fontsize{14}{16}\selectfont
+    Detecção de Massas Mamárias Estratificada por Tamanho em Mamografia:
+    Estudo Comparativo entre YOLOv11m e RT-DETR-L}
+    \vspace{12pt}
+
+    \fontsize{11}{13}\selectfont
+    Erick Keven da Silva Alves$^{1}$\\
+    \vspace{6pt}
+    \textit{$^{1}$Instituição Anônima, Cidade (UF), Brasil.
+    ORCID: 0000-0000-0000-0000}\\
+    \textit{erick@instituicao.br}\\
+    \vspace{6pt}
+    \textbf{Autor correspondente:} Erick Keven da Silva Alves\\
+    \textbf{E-mail:} erick@instituicao.br
+\end{center}
+\vspace{12pt}
+
+% ============================================================
+% RESUMO / ABSTRACT
+% ============================================================
+\noindent\textit{\textbf{Resumo:}
+\textbf{Contexto:} A detec\c{c}\~ao de massas mam\'arias em mamografia \'e
+desafiadora para sistemas CAD devido \`a variabilidade de tamanho das les\~oes.
+\textbf{Objetivo:} Comparar YOLOv11m (CNN \textit{one-stage}) e RT-DETR-L
+(Transformer) para detec\c{c}\~ao de massas, com avalia\c{c}\~ao estat\'istica
+estratificada por tamanho.
+\textbf{M\'etodo:} Tr\^es \textit{datasets} p\'ublicos foram combinados
+(CDD-CESM \textit{low-energy}, INbreast, VinDr-Mammo; 2.341 anota\c{c}\~oes em
+1.713 imagens). Faixas definidas por tercis emp\'iricos (P33\,=\,19,4\,mm;
+P67\,=\,36,3\,mm). Seis experimentos (3 faixas $\times$ 2 modelos) com m\'etricas
+mAP@0,5, FROC, Wilcoxon pareado (12 testes, Bonferroni $\alpha'$\,=\,0,0042) e
+McNemar (IoU$\geq$0,3; $\alpha'$\,=\,0,0167). Grad-CAM e mapas de aten\c{c}\~ao
+foram gerados para interpreta\c{c}\~ao qualitativa.
+\textbf{Resultados:} RT-DETR-L obteve Recall superior nas tr\^es faixas
+($p<0{,}003$) e maior taxa de detec\c{c}\~ao bin\'aria ($p<10^{-5}$, McNemar).
+YOLOv11m obteve F1 superior na faixa pequena ($p=1{,}30\times10^{-4}$). An\'alise
+SAHI confirmou origem arquitetural das diferen\c{c}as.
+\textbf{Conclus\~ao:} Arquiteturas complementares: YOLOv11m para precis\~ao em
+massas pequenas, RT-DETR-L para sensibilidade em massas m\'edias e grandes.}
+
+\noindent\textit{\textbf{Palavras-chave:} Mamografia; Detec\c{c}\~ao de objetos; Aprendizado profundo.}
+
+\vspace{12pt}
+
+\noindent\textit{\textbf{Abstract:}
+\textbf{Background:} Detection of breast masses in mammography remains challenging for
+CAD systems, especially due to lesion size variability.
+\textbf{Objective:} To compare YOLOv11m (CNN one-stage detector) and RT-DETR-L
+(Transformer-based detector) for breast mass detection with formal statistical
+evaluation stratified by lesion size.
+\textbf{Method:} Three public datasets were combined (CDD-CESM low-energy, INbreast,
+VinDr-Mammo; 2,341 mass annotations in 1,713 images). Size bins were defined by
+empirical terciles (small: 0--19.4\,mm; medium: 19.4--36.3\,mm; large: $>$36.3\,mm).
+Both models were independently trained per bin (6 experiments) using Ultralytics
+(batch=8, img\_size=640, CUDA). Evaluation included mAP@0.5, mAP@0.5:0.95, Precision,
+Recall, F1, FROC curves, paired Wilcoxon tests (12 comparisons, Bonferroni
+$\alpha'=0.0042$), McNemar tests (IoU$\geq$0.3; $\alpha'=0.0167$), Grad-CAM and
+attention maps.
+\textbf{Results:} RT-DETR-L achieved significantly higher Recall across all three bins
+($p<0.003$, Wilcoxon/Bonferroni) and higher binary detection rate (McNemar, $p<10^{-5}$).
+YOLOv11m achieved significantly higher F1 in the small bin ($p=1.30\times 10^{-4}$).
+SAHI analysis confirmed the difference is architectural.
+\textbf{Conclusion:} The architectures show complementary strengths: YOLOv11m for
+precision in small masses, RT-DETR-L for sensitivity in medium and large masses,
+suggesting hybrid deployment strategies.}
+
+\noindent\textit{\textbf{Keywords:} Mammography; Object detection; Deep learning.}
+
+\vspace{12pt}
+
+
+% ============================================================
+\section{Introdução}
+% ============================================================
+
+O câncer de mama é a neoplasia maligna mais frequente entre mulheres no Brasil e no
+mundo. No âmbito nacional, o Instituto Nacional de Câncer (INCA) estimou 73.610 casos
+novos para o biênio 2023--2024, correspondendo a uma taxa ajustada de 66,54 casos por
+100.000 mulheres \cite{INCA2023}. O rastreamento mamográfico periódico é a principal
+estratégia de detecção precoce recomendada; quando o tumor é identificado em estágio
+localizado, a sobrevida global em cinco anos supera 95\% \cite{AJCC2018TNM}. A
+dificuldade de detecção varia marcadamente com o tamanho da lesão: massas pequenas são
+desproporcionalmente perdidas no rastreamento, enquanto massas maiores são mais
+conspícuas mas ainda sujeitas a erros de localização em parênquima denso. Apesar da
+relevância clínica dessa variabilidade, a maioria dos estudos de CAD avalia o
+desempenho de detectores de forma agregada, sem estratificação por tamanho.
+
+A detecção automatizada de achados mamográficos por sistemas de
+\textit{Computer-Aided Detection} (CAD) baseados em aprendizado profundo avançou
+consideravelmente na última década. Ribli \textit{et al.} \cite{Ribli2018EM}
+demonstraram que uma variante da \textit{Faster} R-CNN superou o CAD comercial em dois
+\textit{datasets} públicos. Rodriguez-Ruiz \textit{et al.} \cite{RodriguezRuiz2019}
+mostraram que um sistema de IA autônomo atingiu sensibilidade equivalente à média de
+101 radiologistas. McKinney \textit{et al.} \cite{McKinney2020} demonstraram que
+sistemas de IA podem reduzir falsos negativos e aliviar a carga de dupla leitura.
+Apesar desses avanços, estudos comparativos entre detectores CNN e Transformer
+especificamente estratificados por tamanho de lesão mamária permanecem escassos.
+
+A detecção de objetos em visão computacional é dominada por dois paradigmas
+arquiteturais. As redes neurais convolucionais (CNNs) de estágio único, representadas
+pela família \textit{You Only Look Once} (YOLO), operam com âncoras locais e extração
+hierárquica de características \cite{Ultralytics2024YOLO11}. Os detectores baseados em
+Transformers foram introduzidos pelo \textit{DEtection TRansformer} (DETR)
+\cite{Carion2020DETR}, que modela dependências globais via \textit{self-attention}. O
+\textit{Real-Time DEtection TRansformer} (RT-DETR) combina codificador híbrido
+CNN--Transformer com decodificador de consultas aprendíveis \cite{Zhao2024RTDETR}. As
+propriedades arquiteturais distintas --- campos receptivos locais \textit{versus}
+atenção global --- sugerem comportamentos diferenciados conforme o tamanho do
+objeto-alvo, hipótese ainda pouco investigada em imagem mamográfica.
+
+Este estudo apresenta as seguintes contribuições: (1) comparação sistemática e
+estratificada por tamanho entre YOLOv11m e RT-DETR-L em três faixas empiricamente
+definidas por tercis, utilizando três \textit{datasets} públicos heterogêneos
+(CDD-CESM \textit{low-energy}, INbreast e VinDr-Mammo); (2) avaliação estatística
+formal via testes de Wilcoxon pareados e McNemar com correção de Bonferroni;
+(3) análise FROC com limiar de IoU clinicamente motivado; (4) análise de
+interpretabilidade via Grad-CAM (YOLO) e mapas de atenção cruzada (RT-DETR);
+(5) análise \textit{post-hoc} com SAHI isolando efeitos arquiteturais dos efeitos de
+resolução na detecção de lesões pequenas.
+
+
+% ============================================================
+\section{Métodos}
+% ============================================================
+
+\subsection{Datasets}
+
+Foram utilizados tr\^es \textit{datasets} p\'ublicos de mamografia
+(Tabela~\ref{tab:datasets}). Crit\'erio de inclus\~ao uniforme: imagens com anota\c{c}\~ao de
+massa com tamanho comput\'avel em mil\'imetros. Foram exclu\'idas les\~oes n\~ao classificadas
+como massa (calcifica\c{c}\~oes, assimetrias, distor\c{c}\~oes arquitet\^onicas).
+
+\begin{table}[ht]
+\centering
+\caption{Caracter\'isticas dos \textit{datasets} utilizados}
+\label{tab:datasets}
+\small
+\begin{tabular}{lllll}
+\toprule
+\textbf{Dataset} & \textbf{Modalidade} & \textbf{Origem} &
+\textbf{Espa\c{c}amento (mm/px)} & \textbf{Ref.} \\
+\midrule
+INbreast    & FFDM              & Portugal    & DICOM (\texttt{PixelSpacing})     &
+\cite{Moreira2012INbreast} \\
+CDD-CESM (LE) & CESM \textit{low-energy} & Egito & \textit{Fallback} 0,094 &
+\cite{Khaled2022CDDCESM} \\
+VinDr-Mammo & FFDM              & Vietn\~a      & \texttt{metadata.csv} ou 0,085    &
+\cite{Nguyen2023VinDr} \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\small Fonte: elabora\c{c}\~ao pr\'opria.}
+\end{table}
+
+Para o INbreast, as massas foram extra\'idas dos arquivos XML; pol\'igonos foram
+convertidos a ret\^angulos envolventes m\'inimos. Para o CDD-CESM, foram utilizadas
+exclusivamente as imagens \textit{low-energy} (LE) para manter consist\^encia de
+dom\'inio visual com os \textit{datasets} FFDM; as imagens recombinadas (com
+subtra\c{c}\~ao de contraste) foram exclu\'idas. As segmenta\c{c}\~oes manuais foram
+convertidas a \textit{bounding boxes} via ret\^angulo envolvente do pol\'igono. Para o
+VinDr-Mammo, apenas achados com a cadeia \textit{``Mass''} foram inclu\'idos; registros
+\textit{``No Finding''} foram exclu\'idos integralmente.
+
+O coorte combinado compreendeu \textbf{2.341 anota\c{c}\~oes de massa em 1.713 imagens},
+distribu\'idas como: CDD-CESM (LE): 1.000; INbreast: 116; VinDr-Mammo: 1.225.
+
+\subsection{Pré-processamento}
+
+O \textit{pipeline} foi aplicado de forma idêntica a todos os \textit{datasets}:
+
+\textbf{(1) Leitura e rescale DICOM.} \textit{pydicom} com aplicação de
+\texttt{RescaleSlope}/\texttt{RescaleIntercept}; \texttt{MONOCHROME1} invertido;
+formatos não DICOM convertidos em escala de cinza via PIL.
+
+\textbf{(2) Normalização para 8~bits.} Conversão para \texttt{uint8} [0--255] com
+escalonamento por percentil.
+
+\textbf{(3) Cálculo do tamanho em milímetros.}
+\begin{equation}
+  s_{\mathrm{mm}} = \max(w_{\mathrm{px}},\, h_{\mathrm{px}}) \times d_{\mathrm{mm/px}}
+  \label{eq:sizemm}
+\end{equation}
+Caixas clampadas e anotações degeneradas removidas.
+
+\textbf{(4) Segmentação da região mamária.} Limiarização binária (limiar = 10),
+maior contorno como máscara, margem de 10~px; anotações externas descartadas.
+
+\textbf{(5) CLAHE.} Grade $8{\times}8$, \textit{clip} = 2,0, parametrização uniforme
+entre \textit{datasets}.
+
+\textbf{(6) Redimensionamento para 640${\times}$640~px.} Interpolação bilinear com
+fatores de escala independentes por eixo; distorção anisotrópica aceita como
+compromisso com o padrão Ultralytics.
+
+\subsection{Estratifica\c{c}\~ao por Tamanho}
+
+As faixas de tamanho foram definidas por \textbf{tercis emp\'iricos (P33 e P67)} da
+distribui\c{c}\~ao do maior di\^ametro da les\~ao (mm), calculados sobre o coorte combinado
+ap\'os filtros de qualidade e antes da parti\c{c}\~ao por paciente. Essa abordagem garante
+contagens aproximadamente iguais por faixa, assegurando poder estat\'istico
+compar\'avel entre os estratos:
+\textbf{\textit{small}} $[0,\,19{,}4)$\,mm,
+\textbf{\textit{medium}} $[19{,}4,\,36{,}3)$\,mm e
+\textbf{\textit{large}} $[36{,}3,\,150]$\,mm.
+O bin de um caso foi determinado pela maior les\~ao presente.
+Os limites emp\'iricos (19,4\,mm e 36,3\,mm) coincidem aproximadamente com limiares do
+estadiamento TNM (T1c/T2 em 20\,mm), conferindo interpretabilidade cl\'inica sem impor
+cortes arbitr\'arios.
+
+\subsection{Partição dos Dados}
+
+Divis\~ao em treino (70\%), valida\c{c}\~ao (15\%) e teste (15\%) ao n\'ivel do paciente via
+\texttt{GroupShuffleSplit}, com chaves de agrupamento espec\'ificas por
+\textit{dataset}: prefixo do arquivo para INbreast, coluna \texttt{patient\_id}
+para CDD-CESM e \texttt{study\_id} para VinDr-Mammo. Sem sobreposi\c{c}\~ao entre
+parti\c{c}\~oes (treino $\cap$ teste $= \varnothing$). Semente global:
+\texttt{seed = 42}. Imagens com m\'ultiplas massas foram atribu\'idas \`a faixa da
+maior les\~ao presente.
+
+\subsection{Modelos e Treinamento}
+
+Foram comparados \textbf{YOLOv11m} \cite{Ultralytics2024YOLO11} e \textbf{RT-DETR-L}
+\cite{Zhao2024RTDETR}, ambos via Ultralytics com pesos pré-treinados no COCO e
+\textit{fine-tuning} nos dados de mamografia. Parâmetros na Tabela~\ref{tab:treino}.
+
+\begin{table}[ht]
+\centering
+\caption{Parâmetros de treinamento dos modelos}
+\label{tab:treino}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Parâmetro} & \textbf{YOLOv11m} & \textbf{RT-DETR-L} \\
+\midrule
+Peso base                          & \texttt{yolo11m.pt} & \texttt{rtdetr-l.pt} \\
+Otimizador                         & SGD                 & AdamW \\
+Taxa de aprendizado                & 0,01                & 0,0001 \\
+\textit{Weight decay}              & $5{\times}10^{-4}$  & $1{\times}10^{-4}$ \\
+\textit{Warmup} (épocas)           & 3                   & 3 \\
+\textit{Batch size}                & 8                   & 8 \\
+Épocas máximas                     & 100                 & 100 \\
+\textit{Early stopping (patience)} & 20                  & 20 \\
+Tamanho de entrada                 & $640{\times}640$    & $640{\times}640$ \\
+Semente                            & 42                  & 42 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\small Fonte: elabora\c{c}\~ao pr\'opria.}
+\end{table}
+
+Augmenta\c{c}\~ao id\^entica: reflex\~ao horizontal (prob.\ 0,5); reflex\~ao vertical
+\textbf{desativada} (\texttt{flipud = 0,0}), pois a invers\~ao craniocaudal n\~ao \'e
+anatom\^icamente equivalente; rota\c{c}\~ao ${\pm}$10\textdegree; escala $\pm$10\%; \textit{mosaic}
+\textbf{desativado} (\texttt{mosaic = 0,0}), preservando a escala real das les\~oes.
+Treinamentos independentes para cada faixa
+(\textit{small}, \textit{medium}, \textit{large}), totalizando seis experimentos.
+O \textit{batch size} foi igualado em 8 para eliminar essa vari\'avel como confundidora.
+
+\subsection{M\'etricas de Avalia\c{c}\~ao}
+
+M\'etricas reportadas para a melhor \'epoca em valida\c{c}\~ao: mAP@0,5, mAP@0,5:0,95,
+precis\~ao, recall e F1 (conf = 0,25). Curva \textbf{FROC} calculada com IoU $\geq$ 0,3;
+sensibilidade reportada nos pontos operacionais 0,125; 0,25; 0,5; 1,0 e 2,0 FP/imagem.
+Como nenhuma imagem negativa foi inclu\'ida no teste, o FROC mede detec\c{c}\~oes excedentes
+dentro de imagens positivas --- limita\c{c}\~ao declarada explicitamente.
+
+\subsection{An\'alise Estat\'istica}
+
+Testes de \textbf{Wilcoxon pareados} (por imagem, pareados por \texttt{image\_id})
+aplicados a quatro m\'etricas cont\'inuas (mAP@0,5, mAP@0,5:0,95, Recall, F1) nas
+tr\^es faixas: \textbf{12 testes}. Testes de \textbf{McNemar} para detec\c{c}\~ao bin\'aria
+(IoU $\geq$ 0,3, conf $\geq$ 0,25) por faixa: \textbf{3 testes}. Corre\c{c}\~ao de
+\textbf{Bonferroni}: $\alpha' = 0{,}05/12 \approx 0{,}0042$ (Wilcoxon) e
+$\alpha' = 0{,}05/3 \approx 0{,}0167$ (McNemar).
+Grupos com $n < 30$ no teste designados como explorat\'orios.
+
+\subsection{An\'alise \textit{Post-hoc} com SAHI (Faixa Pequena)}
+
+O SAHI (\textit{Slicing Aided Hyper Inference}) foi aplicado \textit{post-hoc} em
+ambos os modelos no teste da faixa pequena (\textit{slice}: 320$\times$320\,px,
+\textit{overlap}: 0,2, NMS IoU: 0,5) para avaliar se a diferen\c{c}a de detec\c{c}\~ao era
+atribu\'ivel \`a resolu\c{c}\~ao de entrada ou a diferen\c{c}as arquiteturais.
+
+\subsection{Visualiza\c{c}\~ao de Ativa\c{c}\~ao}
+
+Mapas Grad-CAM foram gerados para o YOLOv11m usando a \'ultima camada convolucional
+do \textit{backbone}. Mapas de aten\c{c}\~ao cruzada foram extra\'idos para o RT-DETR-L
+via \textit{forward hook} no m\'odulo MSDeformAttn do \textit{decoder}.
+
+\subsection{Aspectos \'Eticos e Infraestrutura}
+
+\textit{Datasets} p\'ublicos anonimizados; aprova\c{c}\~ao por CEP dispensada. GPU NVIDIA RTX~3070
+(8\,GB VRAM), Python 3.11, Ultralytics. Reprodutibilidade por \texttt{seed = 42}
+global, \texttt{cudnn.deterministic = True}, \texttt{benchmark = False}.
+
+
+% ============================================================
+\section{Resultados}
+% ============================================================
+
+Todos os seis experimentos convergiram antes do limite de 100 \'epocas via
+\textit{early stopping} (patience=20). O RT-DETR-L na faixa pequena convergiu
+na \'epoca 6, com mAP@0,5 de valida\c{c}\~ao de 0,227.
+
+\subsection{Desempenho no Conjunto de Teste}
+
+A Tabela~\ref{tab:principal} apresenta as m\'etricas no conjunto de teste.
+
+\begin{table}[ht]
+\centering
+\caption{Desempenho por faixa e modelo (conjunto de teste)}
+\label{tab:principal}
+\small
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Faixa} & \textbf{Modelo} & \textbf{mAP@0,5} & \textbf{mAP@0,5:0,95} &
+\textbf{Precis\~ao} & \textbf{Recall} & \textbf{F1} \\
+\midrule
+\multirow{2}{*}{\textit{small}}
+  & YOLOv11m  & \textbf{0,466} & \textbf{0,242} & \textbf{0,339} & 0,376 & \textbf{0,347} \\
+  & RT-DETR-L & 0,463 & 0,210 & 0,132 & \textbf{0,569} & 0,204 \\
+\midrule
+\multirow{2}{*}{\textit{medium}}
+  & YOLOv11m  & 0,629 & 0,315 & \textbf{0,453} & 0,531 & 0,475 \\
+  & RT-DETR-L & 0,610 & 0,305 & 0,436 & \textbf{0,615} & \textbf{0,486} \\
+\midrule
+\multirow{2}{*}{\textit{large}}
+  & YOLOv11m  & \textbf{0,608} & \textbf{0,306} & 0,353 & 0,386 & 0,358 \\
+  & RT-DETR-L & 0,575 & 0,282 & \textbf{0,514} & \textbf{0,523} & \textbf{0,506} \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\small $n_{\textit{small}}=126$; $n_{\textit{medium}}=343$; $n_{\textit{large}}=282$.
+Negrito: melhor valor por faixa. Fonte: elabora\c{c}\~ao pr\'opria.}
+\end{table}
+
+
+\subsection{Testes de Wilcoxon --- Resultados Completos}
+
+\begin{table}[ht]
+\centering
+\caption{Testes de Wilcoxon pareados por imagem (apenas teste)}
+\label{tab:wilcoxon}
+\small
+\begin{tabular}{llcccl}
+\toprule
+\textbf{Faixa} & \textbf{M\'etrica} & \textbf{$\Delta$} &
+\textbf{\textit{p}-valor} & \textbf{Sig.*} & \textbf{$n$} \\
+\midrule
+\multirow{4}{*}{\textit{small}}
+  & mAP@0,5      & $-$0,003 & 1,000              & N\~ao          & 126  \\
+  & mAP@0,5:0,95 & $-$0,033 & 1,000              & N\~ao          & 126  \\
+  & Recall       & $+$0,193 & \textbf{8,53$\times 10^{-5}$} & \textbf{Sim} & 126 \\
+  & F1           & $-$0,143 & \textbf{1,30$\times 10^{-4}$} & \textbf{Sim} & 126 \\
+\midrule
+\multirow{4}{*}{\textit{medium}}
+  & mAP@0,5      & $-$0,020 & 1,000              & N\~ao          & 343 \\
+  & mAP@0,5:0,95 & $-$0,010 & 1,000              & N\~ao          & 343 \\
+  & Recall       & $+$0,084 & \textbf{0,0021}    & \textbf{Sim}   & 343 \\
+  & F1           & $+$0,012 & 1,000              & N\~ao          & 343 \\
+\midrule
+\multirow{4}{*}{\textit{large}}
+  & mAP@0,5      & $-$0,034 & 0,527              & N\~ao          & 282 \\
+  & mAP@0,5:0,95 & $-$0,024 & 0,361              & N\~ao          & 282 \\
+  & Recall       & $+$0,138 & \textbf{1,39$\times 10^{-5}$} & \textbf{Sim} & 282 \\
+  & F1           & $+$0,149 & \textbf{2,12$\times 10^{-7}$} & \textbf{Sim} & 282 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\small $\Delta > 0$: RT-DETR-L superior; $\Delta < 0$: YOLOv11m superior.
+*Ap\'os Bonferroni ($\alpha/12 \approx 0{,}0042$). Fonte: elabora\c{c}\~ao pr\'opria.}
+\end{table}
+
+\textbf{Resumo:} 5/12 testes significativos ap\'os Bonferroni. RT-DETR-L superior em
+Recall nas tr\^es faixas; YOLOv11m superior em F1 na faixa pequena; RT-DETR-L superior
+em F1 na faixa grande. Nenhuma diferen\c{c}a significativa em m\'etricas de AP.
+
+\subsection{Teste de McNemar --- Detec\c{c}\~ao Bin\'aria (IoU $\geq$ 0,3)}
+
+\begin{table}[ht]
+\centering
+\caption{Teste de McNemar para detec\c{c}\~ao bin\'aria por imagem (IoU $\geq$ 0,3)}
+\label{tab:mcnemar}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Faixa} & \textbf{Taxa DETR} & \textbf{Taxa YOLO} &
+\textbf{$\Delta$} & \textbf{\textit{p}-valor} & \textbf{Sig.*} \\
+\midrule
+\textit{small}
+  & \textbf{0,643} & 0,429 & $+$0,214 & \textbf{3,72$\times 10^{-6}$} & \textbf{Sim} \\
+\textit{medium}
+  & \textbf{0,703} & 0,586 & $+$0,117 & \textbf{1,72$\times 10^{-6}$} & \textbf{Sim} \\
+\textit{large}
+  & \textbf{0,716} & 0,454 & $+$0,262 & \textbf{1,87$\times 10^{-14}$} & \textbf{Sim} \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\small *Ap\'os Bonferroni ($\alpha/3 \approx 0{,}0167$).
+Fonte: elabora\c{c}\~ao pr\'opria.}
+\end{table}
+
+\subsection{An\'alise FROC}
+
+\begin{table}[ht]
+\centering
+\caption{Sensibilidade FROC em pontos operacionais selecionados (IoU $\geq$ 0,3)}
+\label{tab:froc}
+\small
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Faixa} & \textbf{Modelo} & \textbf{@ 0,125} & \textbf{@ 0,25} &
+\textbf{@ 0,5} & \textbf{@ 1,0} & \textbf{@ 2,0} \\
+\midrule
+\multirow{2}{*}{\textit{small}}
+  & YOLOv11m  & \textbf{0,228} & \textbf{0,324} & \textbf{0,397} & \textbf{0,456} & \textbf{0,529} \\
+  & RT-DETR-L & 0,059 & 0,118 & 0,176 & 0,338 & 0,449 \\
+\midrule
+\multirow{2}{*}{\textit{medium}}
+  & YOLOv11m  & 0,362 & 0,474 & 0,564 & 0,627 & 0,689 \\
+  & RT-DETR-L & \textbf{0,411} & \textbf{0,526} & \textbf{0,616} & \textbf{0,662} & \textbf{0,719} \\
+\midrule
+\multirow{2}{*}{\textit{large}}
+  & YOLOv11m  & 0,345 & 0,411 & 0,485 & 0,595 & 0,688 \\
+  & RT-DETR-L & \textbf{0,473} & \textbf{0,571} & \textbf{0,643} & \textbf{0,673} & \textbf{0,702} \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\small Negrito: melhor valor por faixa. Fonte: elabora\c{c}\~ao pr\'opria.}
+\end{table}
+
+Na faixa pequena, o YOLOv11m apresentou sensibilidade FROC consistentemente
+superior ao RT-DETR-L em baixos n\'iveis de FP/imagem (0,228 \textit{vs.} 0,059
+a 0,125\,FP/img) --- coerente com o F1 superior no conjunto de teste. Nas faixas
+m\'edia e grande, o RT-DETR-L dominou em todos os pontos operacionais, atingindo
+0,719 a 2,0\,FP/img na faixa m\'edia (\textit{vs.} 0,689 do YOLOv11m) --- padr\~ao
+consistente com o Recall superiores confirmados pelo Wilcoxon.
+\textbf{Limita\c{c}\~ao declarada:} sem imagens negativas no teste, o FROC mede
+FP excedentes dentro de imagens positivas e n\~ao \'e diretamente compar\'avel a
+estudos com FROC cl\'inico completo.
+
+\subsection{An\'alise \textit{Post-hoc} com SAHI (Faixa Pequena)}
+
+\begin{table}[ht]
+\centering
+\caption{Impacto do SAHI na faixa pequena}
+\label{tab:sahi}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Configura\c{c}\~ao} & \textbf{mAP@0,5} & \textbf{Prec.} & \textbf{Recall} &
+\textbf{F1} & \textbf{Det.\%} \\
+\midrule
+YOLOv11m (sem SAHI)  & 0,466 & 0,339 & 0,376 & 0,347 & 42,9\% \\
+YOLOv11m (com SAHI)  & 0,400 & 0,241 & 0,419 & 0,288 & 46,8\% \\
+RT-DETR-L (sem SAHI) & 0,463 & 0,132 & 0,569 & 0,204 & 64,3\% \\
+RT-DETR-L (com SAHI) & 0,418 & 0,058 & 0,597 & 0,102 & 73,0\% \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\small Det.\%: taxa de detec\c{c}\~ao bin\'aria (IoU$\geq$0,3). Fonte: elabora\c{c}\~ao pr\'opria.}
+\end{table}
+
+O SAHI melhorou marginalmente o Recall do YOLO (+4,3\,pp) \`a custa de redu\c{c}\~ao de
+Precis\~ao ($-$9,8\,pp) e F1 ($-$5,9\,pp). A vantagem do RT-DETR-L foi mantida ap\'os
+SAHI, confirmando que a diferen\c{c}a \'e \textbf{arquitetural}.
+
+\subsection{Visualiza\c{c}\~oes de Ativa\c{c}\~ao}
+
+As imagens para an\'alise qualitativa foram selecionadas do conjunto de teste da
+faixa \textit{medium} por crit\'erio formal predefinido~\cite{Selvaraju2017GradCAM},
+aplicado independentemente de qualquer observa\c{c}\~ao dos mapas: (i)~verdadeiro
+positivo em ambos os modelos (IoU\,$\geq$\,0,5 e conf\,$\geq$\,0,25 em ambos);
+(ii)~verdadeiro positivo exclusivo do RT-DETR-L com falso negativo do YOLOv11m
+(DETR conf\,$\geq$\,0,25, YOLO sem detec\c{c}\~ao v\'alida, IoU\,$\geq$\,0,3);
+e (iii)~falso positivo representativo do YOLOv11m (detec\c{c}\~ao YOLO sem
+correspond\^encia GT, IoU\,$<$\,0,3). A faixa \textit{medium} foi escolhida por
+apresentar maior volume de imagens de teste ($n$\,=\,343) e por ser a faixa em que
+ambos os modelos obtiveram desempenho mais equilibrado, tornando os casos
+contrastantes mais informativos.
+
+A Figura~\ref{fig:heatmaps_medium} exibe os tr\^es pain\\'eis resultantes.
+\textbf{Caso~1 (TP ambos):} o Grad-CAM do YOLO ativa difusamente sobre o
+par\^enquima denso ao redor da les\~ao, enquanto a aten\c{c}\~ao do RT-DETR
+ancora seletivamente sobre a regi\~ao da massa, evidenciando maior especificidade
+espacial do mecanismo de aten\c{c}\~ao cruzada.
+\textbf{Caso~2 (RT-DETR detecta / YOLO n\~ao):} a aten\c{c}\~ao cruzada foca
+com precis\~ao a massa inferior (conf\,=\,0,86); o Grad-CAM dispersa pela borda
+da mama sem localizar a les\~ao, ilustrando como o campo receptivo local do CNN
+\textit{one-stage} pode falhar em massas com contraste reduzido no parênquima
+fibroglandular.
+\textbf{Caso~3 (FP representativo YOLO):} a ativa\c{c}\~ao recai sobre tecido
+fibroglandular denso, gerando detec\c{c}\~ao esp\'uria; o RT-DETR ancora a
+\textit{query} corretamente na regi\~ao anotada, sugerindo que o mecanismo de
+aten\c{c}\~ao global suprime artefatos de tecido denso com maior efic\'acia.
+Imagens: CDD-CESM \textit{low-energy} (Casos~1, 3) e VinDr-Mammo (Caso~2).
+
+\begin{figure*}[!ht]
+\centering
+\caption{Figura~1: Pain\'eis comparativos de ativa\c{c}\~ao para a faixa
+\textit{medium} (19,4--36,3\,mm). Cada painel: imagem original $\mid$
+Grad-CAM YOLOv11m $\mid$ Mapa de Aten\c{c}\~ao RT-DETR-L.
+Fonte: elabora\c{c}\~ao pr\'opria.}
+\label{fig:heatmaps_medium}
+\includegraphics[width=\linewidth]{figures/heatmap_medium_caso1.png}
+\vspace{4pt}
+
+\includegraphics[width=\linewidth]{figures/heatmap_medium_caso2.png}
+\vspace{4pt}
+
+\includegraphics[width=\linewidth]{figures/heatmap_medium_caso3.png}
+\end{figure*}
+
+
+
+% ============================================================
+\section{Discuss\~ao}
+% ============================================================
+
+\subsection{Complementaridade Arquitetural por Faixa de Tamanho}
+
+O achado central \'e uma \textbf{invers\~ao de vantagem arquitetural dependente do
+tamanho}: o YOLOv11m demonstrou F1 superior na faixa pequena (0,347 \textit{vs.}
+0,204; $p=1{,}30\times 10^{-4}$), enquanto o RT-DETR-L demonstrou Recall e F1
+superiores nas faixas m\'edia e grande. Massas pequenas ocupam poucos tokens no
+\textit{feature map} ap\'os \textit{downsampling} --- o \textit{self-attention} do
+RT-DETR dilui o sinal. O campo receptivo local do YOLOv11m \'e mais adequado para
+regi\~oes compactas de alto contraste.
+
+\subsection{Implica\c{c}\~oes Cl\'inicas}
+
+O RT-DETR-L demonstrou Recall significativamente superior nas tr\^es faixas
+($p<0{,}003$ ap\'os Bonferroni), sugerindo prefer\^encia como componente prim\'ario em
+sistemas CAD de rastreamento. Contudo, o colapso de Precis\~ao na faixa pequena
+(0,132 \textit{vs.} 0,339) implica maior carga de falsos positivos. Uma estrat\'egia
+h\'ibrida --- RT-DETR-L para triagem inicial seguido de YOLOv11m para refinamento ---
+representa dire\c{c}\~ao clinicamente motivada.
+
+\subsection{A Vantagem do RT-DETR na Detec\c{c}\~ao Bin\'aria}
+
+O McNemar com IoU$\geq$0,3 revelou o achado mais consistente: o RT-DETR-L detectou
+significativamente mais imagens com massa nas tr\^es faixas ($p<10^{-5}$), com
+vantagens de 21\,pp (pequena), 12\,pp (m\'edia) e 26\,pp (grande). Esse resultado n\~ao
+foi capturado pela an\'alise de Wilcoxon sobre mAP.
+
+\subsection{SAHI e Efeitos Arquiteturais vs Efeitos de Resolu\c{c}\~ao}
+
+O SAHI melhorou o Recall do YOLO em apenas 4,3\,pp com redu\c{c}\~ao de Precis\~ao
+($-$9,8\,pp), e a vantagem do RT-DETR foi mantida ap\'os \textit{tiling}, confirmando
+que a diferen\c{c}a na faixa pequena \'e de natureza \textbf{arquitetural}.
+
+\subsection{Converg\^encia Precoce do RT-DETR na Faixa Pequena}
+
+O RT-DETR-L convergiu na \'epoca 6 na faixa pequena --- substancialmente mais cedo que
+o YOLO (\'epoca 43) --- com mAP@0,5 estabilizando em 0,227. Isso sugere que o
+Transformer n\~ao extraiu caracter\'isticas discriminativas de objetos pequenos no
+volume de treinamento dispon\'ivel.
+
+\subsection{Limita\c{c}\~oes}
+
+\begin{enumerate}
+  \item FROC sem imagens negativas (mede detec\c{c}\~oes excedentes em positivas);
+  \item INbreast sub-representado (116 anota\c{c}\~oes);
+  \item Restri\c{c}\~oes de hardware (GPU \'unica RTX~3070, batch=8, img=640);
+  \item Escopo restrito a massas;
+  \item Aus\^encia de valida\c{c}\~ao externa independente;
+  \item Regra de atribui\c{c}\~ao de faixa pela maior les\~ao.
+\end{enumerate}
+
+
+% ============================================================
+\section{Conclus\~ao}
+% ============================================================
+
+Este estudo comparou YOLOv11m e RT-DETR-L em tr\^es \textit{datasets} p\'ublicos
+(CDD-CESM, INbreast, VinDr-Mammo) com estratifica\c{c}\~ao por tercis emp\'iricos.
+Os achados principais s\~ao:
+
+\begin{enumerate}
+  \item O \textbf{RT-DETR-L} alcan\c{c}ou Recall significativamente superior nas tr\^es
+    faixas ($p<0{,}003$) e taxa de detec\c{c}\~ao bin\'aria superior em todas
+    ($p<10^{-5}$, McNemar);
+  \item O \textbf{YOLOv11m} alcan\c{c}ou F1 significativamente superior na faixa
+    pequena (0,347 \textit{vs.} 0,204; $p=1{,}30\times 10^{-4}$);
+  \item A vantagem do RT-DETR-L em les\~oes pequenas \'e \textbf{arquitetural},
+    confirmada pela an\'alise \textit{post-hoc} com SAHI;
+  \item Nenhuma diferen\c{c}a significativa em mAP@0,5 ou mAP@0,5:0,95 ap\'os
+    corre\c{c}\~ao de Bonferroni;
+  \item O RT-DETR-L convergiu na \'epoca 6 na faixa pequena, indicando requisitos de
+    volume de dados n\~ao atendidos para objetos pequenos.
+\end{enumerate}
+
+Esses achados apoiam uma estrat\'egia h\'ibrida: RT-DETR-L para detec\c{c}\~ao de alta
+sensibilidade, complementado pelo YOLOv11m para localiza\c{c}\~ao de precis\~ao em
+massas pequenas. Trabalhos futuros devem investigar coortes maiores, \textit{copy-paste
+augmentation}, calibra\c{c}\~ao do SAHI para mamografia e valida\c{c}\~ao cl\'inica.
+
+
+% ============================================================
+\section*{Agradecimentos}
+% ============================================================
+
+Agradecemos \`as institui\c{c}\~oes respons\'aveis pela disponibiliza\c{c}\~ao p\'ublica dos
+\textit{datasets} INbreast, CDD-CESM e VinDr-Mammo.
+
+
+% ============================================================
+\section*{Declara\c{c}\~ao do Uso de Intelig\^encia Artificial}
+% ============================================================
+
+Declaramos que utilizamos a ferramenta Claude (Anthropic) para apoio pontual na revis\~ao
+gramatical e estrutura\c{c}\~ao do manuscrito. A IA n\~ao foi utilizada para gera\c{c}\~ao de
+resultados, escrita do c\'odigo ou an\'alise estat\'istica. Os autores assumem total
+responsabilidade pelo conte\'udo final do manuscrito.
+
+
+% ============================================================
+% REFER\^ENCIAS
+% ============================================================
+\begin{thebibliography}{15}
+
+\bibitem{INCA2023}
+Instituto Nacional de C\^ancer Jos\'e Alencar Gomes da Silva.
+Estimativa 2023: incid\^encia de c\^ancer no Brasil.
+Rio de Janeiro: INCA; 2022.
+Dispon\'ivel em: \url{https://www.inca.gov.br/publicacoes/livros/estimativa-2023}
+
+\bibitem{AJCC2018TNM}
+Amin MB, Edge SB, Greene FL, Byrd DR, Brookland RK, Washington MK, et al., editores.
+AJCC Cancer Staging Manual. 8\textordfeminine~ed.
+New York: Springer; 2017.
+DOI: 10.1007/978-3-319-40618-3
+
+\bibitem{Ribli2018EM}
+Ribli D, Horv\'ath A, Unger Z, Pollner P, Csabai I.
+Detecting and classifying lesions in mammograms with Deep Learning.
+Sci Rep. 2018;8(1):4165.
+DOI: 10.1038/s41598-018-22437-z
+
+\bibitem{RodriguezRuiz2019}
+Rodriguez-Ruiz A, L\aa ng K, Gubern-Merida A, Broeders M, Gennaro G, Claes P, et al.
+Stand-alone artificial intelligence for breast cancer detection in mammography:
+comparison with 101 radiologists.
+J Natl Cancer Inst. 2019;111(9):916--22.
+DOI: 10.1093/jnci/djy222
+
+\bibitem{McKinney2020}
+McKinney SM, Sieniek M, Godbole V, Godwin J, Antropova N, Ashrafian H, et al.
+International evaluation of an AI system for breast cancer screening.
+Nature. 2020;577(7788):89--94.
+DOI: 10.1038/s41586-019-1799-6
+
+\bibitem{Ultralytics2024YOLO11}
+Jocher G, Qiu J, Chaurasia A.
+Ultralytics YOLO11 [software]. Vers\~ao 11.0.0. 2024. Licen\c{c}a AGPL-3.0.
+Dispon\'ivel em: \url{https://github.com/ultralytics/ultralytics}
+
+\bibitem{Carion2020DETR}
+Carion N, Massa F, Synnaeve G, Usunier N, Kirillov A, Zagoruyko S.
+End-to-end object detection with Transformers.
+In: Vedaldi A, Bischof H, Brox T, Frahm JM, editores. Computer Vision -- ECCV 2020.
+Lecture Notes in Computer Science, vol 12346. Cham: Springer; 2020. p. 213--29.
+DOI: 10.1007/978-3-030-58452-8\_13
+
+\bibitem{Zhao2024RTDETR}
+Zhao Y, Lv W, Xu S, Wei J, Wang G, Dang Q, et al.
+DETRs beat YOLOs on real-time object detection.
+In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition
+(CVPR); 2024. p. 16965--74.
+DOI: 10.1109/CVPR52733.2024.01605
+
+\bibitem{ACR2013BIRADS}
+American College of Radiology.
+ACR BI-RADS Atlas: Breast Imaging Reporting and Data System. 5\textordfeminine~ed.
+Reston (VA): American College of Radiology; 2013.
+
+\bibitem{Moreira2012INbreast}
+Moreira IC, Amaral I, Domingues I, Cardoso A, Cardoso MJ, Cardoso JS.
+INbreast: toward a full-field digital mammographic database.
+Acad Radiol. 2012;19(2):236--48.
+DOI: 10.1016/j.acra.2011.09.014
+
+\bibitem{Khaled2022CDDCESM}
+Khaled R, Helal M, Alfarghaly O, Mokhtar O, Elkorany A, El Kassas H, et al.
+Categorized contrast enhanced mammography dataset for diagnostic and artificial
+intelligence research.
+Sci Data. 2022;9(1):122.
+DOI: 10.1038/s41597-022-01238-0
+
+\bibitem{Nguyen2023VinDr}
+Nguyen HQ, Lam K, Le LT, Pham HH, Tran DQ, Nguyen DB, et al.
+VinDr-Mammo: a large-scale benchmark dataset for computer-aided detection and diagnosis
+in full-field digital mammography.
+Sci Data. 2023;10(1):277.
+DOI: 10.1038/s41597-023-02100-7
+
+\bibitem{Selvaraju2017GradCAM}
+Selvaraju RR, Cogswell M, Das A, Vedantam R, Parikh D, Batra D.
+Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization.
+In: Proceedings of the IEEE International Conference on Computer Vision (ICCV); 2017.
+p. 618--26.
+DOI: 10.1109/ICCV.2017.74
+
+\bibitem{Akyon2022SAHI}
+Akyon FC, Altinuc SO, Temizel A.
+Slicing Aided Hyper Inference and Fine-tuning for Small Object Detection.
+In: Proceedings of the IEEE International Conference on Image Processing (ICIP); 2022.
+p. 966--70.
+DOI: 10.1109/ICIP46576.2022.9897990
+
+\end{thebibliography}
+
+\end{document}

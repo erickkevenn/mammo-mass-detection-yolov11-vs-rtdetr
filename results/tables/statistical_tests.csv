@@ -1,0 +1,13 @@
+bin,metric,RT-DETR-L,YOLOv11m,delta,p_valor,significativo,n_pairs,nota
+small,mAP@0.5,0.2267,0.4651,-0.2384,0.586222,False,126,Wilcoxon pareado por imagem (n=126); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=126
+small,mAP@0.5:0.95,0.0723,0.1729,-0.1006,0.107202,False,126,Wilcoxon pareado por imagem (n=126); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=126
+small,Recall,0.5304,0.4696,0.0608,0.665694,False,126,Wilcoxon pareado por imagem (n=126); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=126
+small,F1,0.2444,0.5108,-0.2664,1.2e-05,True,126,Wilcoxon pareado por imagem (n=126); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=126
+medium,mAP@0.5,0.6325,0.6131,0.0194,0.452912,False,343,Wilcoxon pareado por imagem (n=343); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=343
+medium,mAP@0.5:0.95,0.28,0.2577,0.0223,0.933947,False,343,Wilcoxon pareado por imagem (n=343); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=343
+medium,Recall,0.6104,0.5766,0.0338,0.985741,False,343,Wilcoxon pareado por imagem (n=343); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=343
+medium,F1,0.6369,0.6382,-0.0013,0.373503,False,343,Wilcoxon pareado por imagem (n=343); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=343
+large,mAP@0.5,0.556,0.4971,0.0589,0.044088,False,282,Wilcoxon pareado por imagem (n=282); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=282
+large,mAP@0.5:0.95,0.2187,0.1872,0.0315,0.030195,False,282,Wilcoxon pareado por imagem (n=282); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=282
+large,Recall,0.5973,0.4369,0.1604,0.173678,False,282,Wilcoxon pareado por imagem (n=282); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=282
+large,F1,0.6062,0.5271,0.0791,0.0,True,282,Wilcoxon pareado por imagem (n=282); Bonferroni k=12 (α'=0.00417) | splits_inferência=test N_total=282
